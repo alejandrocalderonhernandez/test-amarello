@@ -1,7 +1,7 @@
 package com.alejandro.orchestrator.listeners;
 
-import com.alejandro.orchestrator.models.ProductRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alejandro.orchestrator.models.ProductEvent;
+import com.alejandro.orchestrator.repositories.InMemoryRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -12,12 +12,16 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class FallbackListener {
 
-    private final ObjectMapper objectMapper;
+    @KafkaListener(topics = {"save", "update"}, groupId = "${spring.kafka.consumer.group-id}")
+    public void UpsertEvent(ProductEvent event) {
+        InMemoryRepository.inMemoryProductsUpsert.add(event);
+        log.info("Revived upsert: " + event );
+    }
 
-    @KafkaListener(topics = "save", groupId = "${spring.kafka.consumer.group-id}")
-    public void saveEvent(ProductRequest event) {
-
-        log.info("Revived: " + event );
+    @KafkaListener(topics = "delete", groupId = "${spring.kafka.consumer.group-id}")
+    public void deleteEvent(ProductEvent event) {
+        InMemoryRepository.inMemoryProductsDelete.add(event);
+        log.info("Revived delete: " + event );
     }
 
 }

@@ -1,6 +1,7 @@
 package com.alejandro.crud.services;
 
 import com.alejandro.crud.entities.ProductDocument;
+import com.alejandro.crud.entities.ProductEvent;
 import com.alejandro.crud.entities.ProductRequest;
 import com.alejandro.crud.repositories.ProductRepository;
 import lombok.AllArgsConstructor;
@@ -38,7 +39,8 @@ public class ProductService {
     public ProductDocument sendToBroker(String topic, ProductRequest product){
         log.info("circuit breaker");
         try {
-            this.kafkaTemplate.send(topic, product);
+            var event = ProductEvent.builder().name(product.getName()).build();
+            this.kafkaTemplate.send(topic, event);
         } catch (KafkaException e) {
             log.error(e.getLocalizedMessage());
         }
