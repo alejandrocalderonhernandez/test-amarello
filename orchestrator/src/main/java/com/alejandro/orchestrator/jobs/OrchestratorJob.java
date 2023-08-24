@@ -19,23 +19,30 @@ public class OrchestratorJob {
     @Scheduled(cron = "0 */2 * * * *")
     public void upsertMongo() {
         System.out.println("Start job");
-        if (!InMemoryRepository.inMemoryProductsUpsert.isEmpty()) {
-            log.info("Upsert DB");
-            InMemoryRepository.inMemoryProductsUpsert
+        if (!InMemoryRepository.inMemoryProductsInsert.isEmpty()) {
+            log.info("Insert DB");
+            InMemoryRepository.inMemoryProductsInsert
                     .forEach(product ->
                         productRepository.save(
                             ProductDocument.builder().name(product.getName()).build()));
-            InMemoryRepository.inMemoryProductsUpsert.clear();
+            InMemoryRepository.inMemoryProductsInsert.clear();
         }
 
         if (!InMemoryRepository.inMemoryProductsDelete.isEmpty()) {
             log.info("deleting DB");
-            System.out.println(InMemoryRepository.inMemoryProductsUpsert);
-            InMemoryRepository.inMemoryProductsUpsert
+            InMemoryRepository.inMemoryProductsDelete
                     .forEach(product
-                            -> productRepository.deleteByName(product.getName()));
-            InMemoryRepository.inMemoryProductsUpsert.clear();
+                            -> productRepository.deleteById(product.getId()));
+            InMemoryRepository.inMemoryProductsDelete.clear();
         }
 
+        if (!InMemoryRepository.inMemoryProductsUpdate.isEmpty()) {
+            log.info("Update DB");
+            InMemoryRepository.inMemoryProductsUpdate
+                    .forEach(product ->
+                            productRepository.save(
+                                    ProductDocument.builder().id(product.getId()).name(product.getName()).build()));
+            InMemoryRepository.inMemoryProductsInsert.clear();
+        }
     }
 }
